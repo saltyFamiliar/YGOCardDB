@@ -1,0 +1,5 @@
+HOSTNAME = "127.0.0.1"
+USERNAME = "root"
+PASSWORD = "root"
+DBNAME = "YGOCards"
+MAIN_TABLE_NAME = "cards"
