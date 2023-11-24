@@ -1,9 +1,21 @@
+from typing import Dict, Tuple, List
+
+Limit_Type_Dict: Dict[str, int] = {
+    "Standard": 0,
+    "Semi-Limited": 1,
+    "Limited": 2,
+    "Banned": 3,
+}
+
+Formats = ["ocg", "tcg", "goat"]
+
+
 class Card:
     def __init__(self, card_data: dict):
         keys = card_data.keys()
 
-        self.id = card_data['id'] if 'id' in keys else None
-        self.name = card_data['name'] if 'name' in keys else None
+        self.id: int = card_data['id']
+        self.name = card_data['name']
         self.type = card_data['type'] if 'type' in keys else None
         self.frameType = card_data['frameType'] if 'frameType' in keys else None
         self.desc = card_data['desc'] if 'desc' in keys else None
@@ -22,3 +34,22 @@ class Card:
         self.linkval = card_data['linkval'] if 'linkval' in keys else None
         self.linkmarkers = card_data['linkmarkers'] if 'linkmarkers' in keys else None
         self.banlist_info = card_data['banlist_info'] if 'banlist_info' in keys else None
+
+        self.limits: Dict[str, str] = {}
+        banlist_entries = self.banlist_info.keys() if self.banlist_info else {}
+        for format_name in Formats:
+            banlist_name = f"ban_{format_name}"
+            if banlist_name not in banlist_entries:
+                self.limits[format_name] = "Standard"
+            else:
+                self.limits[format_name] = self.banlist_info[banlist_name]
+
+    def get_limit_table_entries(self) -> List[Tuple[int, int, int]]:
+        """
+        returns an array of entries into the LIMIT table for the card. Every card has a limit for every format
+        :return: [(CARD_ID, FORMAT_ID, LIMIT_TYPE_ID), (CARD_ID, FORMAT_ID, LIMIT_TYPE_ID), (CARD_ID, FORMAT_ID, LIMIT_TYPE_ID)]
+        """
+        result = []
+        for format_id, format_name in enumerate(Formats):
+            result.append((self.id, format_id, Limit_Type_Dict[self.limits[format_name]]))
+        return result

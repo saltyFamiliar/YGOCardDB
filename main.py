@@ -47,9 +47,21 @@ def main() -> int:
             if MAIN_TABLE_NAME.casefold() not in [results[0].casefold() for results in schemaCursor]:
                 schemaCursor.execute(f"CREATE TABLE {MAIN_TABLE_NAME} (id VARCHAR(255), name VARCHAR(255))")
 
+            ################################# LIMIT TABLE EXAMPLE ########################################
+            if 'LIMIT'.casefold() not in [results[0].casefold() for results in schemaCursor]:
+                schemaCursor.execute(f"CREATE TABLE LIMIT (LIMIT_ID VARCHAR(255), CARD_ID VARCHAR(255), FORMAT_ID VARCHAR(255), LIMIT_TYPE_ID VARCHAR(255))")
+
+            limit_id = 0 # for the purpose of the example. Not sure how PK id's are actually being implemented
             for card in cards:
                 schemaCursor.execute(f"INSERT INTO {MAIN_TABLE_NAME} (id, name) VALUES (%s, %s)",
                                      (card.id, card.name))
+
+                for limit_entry in card.get_limit_table_entries():  # iterate over every entry
+                    card_id, format_id, limit_type_id = limit_entry  # unpack the tuple
+                    sql_query = f"INSERT INTO LIMIT (LIMIT_ID, CARD_ID, FORMAT_ID, LIMIT_TYPE_ID) VALUES (%s, %s, %s, %s)"
+                    schemaCursor.execute(sql_query, (limit_id, card_id, format_id, limit_type_id))
+                    limit_id += 1  # example purpose only maybe
+            ################################# LIMIT TABLE EXAMPLE ########################################
 
             schemaConnection.commit()
 
